@@ -1,7 +1,6 @@
 exports.install = function() {
-
   /**
-   * Essas rotas está ligada a uma ação (ACTION)
+   * Essas rotas estão ligada a uma ação (ACTION)
    * no arquivo schemas/users.js
    *
    * Users/{query,read,create,update,remove,verify} = ACTION

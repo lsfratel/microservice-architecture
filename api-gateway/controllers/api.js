@@ -1,7 +1,8 @@
 exports.install = function() {
-
   /**
-   * Essas rotas está ligada a um controller.
+   * Essas rotas estão ligada a um controller.
+   *
+   * usersService = controller
    */
   ROUTE('GET      /users/*', usersService)
   ROUTE('PUT      /users/*', usersService)
