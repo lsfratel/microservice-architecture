@@ -11,5 +11,5 @@ exports.install = function() {
 }
 
 function usersService() {
-  FUNC.proxyRequest(this, this.req.ctx)
+  FUNC.makeRequest(this)
 }

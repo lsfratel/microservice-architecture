@@ -23,14 +23,19 @@ function serviceDiscovery() {
   })
 }
 
+FUNC.serviceDiscovery = serviceDiscovery
+
 /**
- * Essa função prepara os serviços, adicionando um
- * loadbalance usando a estrateria POWER OF 2
+ * Essa função prepara os serviços.
  */
 function registerDicoveredServices(services) {
   for (const serviceName of Object.keys(services)) {
     const obj = {
       instances: services[serviceName].map(i => ({ ...i, requests: 0 })),
+      /**
+       * Implementação de load balance.
+       * Cada serviço tem seu proprio load balance.
+       */
       next() {
         const $ = this
         const a = $.instances[Math.trunc(Math.random() * $.instances.length)]
@@ -54,61 +59,76 @@ function registerDicoveredServices(services) {
 
 /**
  * Prepara os argumentos para contruir a requisição
- * para o SERVICE REGISTRY e o log de acesso.
+ * para o serviço.
  */
 function setupRequest($) {
-  const { services } = DEF
-  const fowardHeaders = CONF.forward_headers.split(',')
-  const [ serviceName ] = $.split
-
-  const { uuid, uri } = services[serviceName].next()
-  const { query, body, method } = $
-  const headers = fowardHeaders.reduce((l, r) => ({ ...l, [r]: $.headers[r] }), {})
-  const requestId = crypto.randomUUID()
-  const requestUrl = new URL($.url.toServiceUrl($), uri)
+  const service = $.split[0]
+  const headers = getFowardedHeaders($)
+  const { uuid, uri } = DEF.services[service].next()
+  const requestUrl = new URL($.url.replace(`/${service}`, ''), uri)
 
   return {
-    requestId: requestId,
-    method: method,
-    service: `${serviceName}-${uuid}`,
-    query: query,
     url: requestUrl,
-    body: body,
-    headers: headers
+    method: $.req.method,
+    headers: headers,
+    service: `${service}-${uuid}`
   }
 }
 
+function getFowardedHeaders($) {
+  const headers = CONF.forward_headers.split(',')
+
+  if (U.isEmpty(headers)) {
+    return {}
+  }
+
+  return headers.reduce((left, right) => ({ ...left, [right]: $.headers[right] }), {})
+}
+
 /**
- * Passa a requisição para o serviço
+ * Faz a requisição para o serviço.
  */
-function proxyRequest($, args) {
-  const { url, method, headers, requestId } = args
+function makeRequest($) {
+  const { url, method, headers, service } = setupRequest($)
+
+  /**
+   * Seta atributos no contexto para auxiliar no log de acesso.
+   */
+  U.set($, 'req.ctx.url', url)
+  U.set($, 'req.ctx.headers', headers)
+  U.set($, 'req.ctx.method', method)
+  U.set($, 'req.ctx.service', service)
+  U.set($, 'req.ctx.fowardedHeaders', headers)
 
   RESTBuilder.make(function(b) {
     b.strict()
     b.method(method)
     b.url(url.href)
 
-    Object.keys($.body).length && b.json($.body)
-
-    for (const header of Object.keys(headers)) {
-      b.header(header, headers[header])
+    if (
+      ['POST', 'PUT', 'PATCH'].includes(method)
+      && !U.isEmpty($.body)
+    ) {
+      b.json($.body)
     }
 
-    b.header('x-request-id', requestId)
+    for (const header of Object.keys(headers)) {
+      if (headers[header] !== undefined) {
+        b.header(header, headers[header])
+      }
+    }
 
-    args.serviceBegin = performance.now()
-    b.callback(function(e, resp, out) {
+    b.header('x-request-id', $.req.ctx.id)
+
+    U.set($, 'req.ctx.serStart', performance.now())
+    b.callback(function(e, _, out) {
       if (e) {
         $.status = out.status ?? 500
-        $.json(out.value)
-      } else {
-        $.json(out.value)
       }
+
+      $.json(out.value)
     })
   })
 }
 
-FUNC.serviceDiscovery = serviceDiscovery
-FUNC.proxyRequest = proxyRequest
-FUNC.setupRequest = setupRequest
+FUNC.makeRequest = makeRequest

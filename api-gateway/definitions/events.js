@@ -7,48 +7,48 @@ const { performance } = require('node:perf_hooks')
 ON('ready', function() {
   /**
    * Envia uma requisição para o SERVICE REGISTRY
-   * para obter os serviços online
+   * para obter os serviços online.
    */
   FUNC.serviceDiscovery()
 })
 
 /**
- * Evento emitido quando é iniciado uma requisição
+ * Evento emitido quando é iniciado uma requisição.
  */
 ON('request_begin', function(req, _) {
   /**
-   * Cria um novo atributo no Request, com informações
-   * para o proxy.
+   * Atributo para medir o tempo da requisição.
    */
   req.ctx = {
-    ...FUNC.setupRequest(req),
-    requestBegin: performance.now()
+    id: crypto.randomUUID(),
+    reqStart: performance.now()
   }
 })
 
 /**
- * Evento emitido quando a requisição está termiando,
- * aqui a resposta ja foi enviado ao cliente.
+ * Evento emitido quando a requisição está terminando,
+ * aqui a resposta já foi enviada ao cliente.
  */
 ON('request_end', function(req, _) {
   const { ctx } = req
   const end = performance.now()
 
   /**
-   * Gera um logo de acesso.
+   * Gera o logo de acesso.
    */
   console.info(JSON.stringify({
     time: new Date(),
-    requestId: ctx.requestId,
+    requestId: ctx.id,
     service: ctx.service,
     servicePath: ctx.url.pathname,
     path: req.controller.url,
     query: ctx.url.search,
-    requestTime: `${Math.trunc(end - ctx.requestBegin)}ms`,
-    serviceTime: `${Math.trunc(end - ctx.serviceBegin)}ms`,
+    requestTime: `${Math.trunc(end - ctx.reqStart)}ms`,
+    serviceTime: `${Math.trunc(end - ctx.serStart)}ms`,
     method: ctx.method,
     host: req.headers.host,
     status: req.controller.status,
-    ip: req.controller.ip
+    ip: req.controller.ip,
+    fowardedHeaders: ctx.fowardedHeaders
   }))
 })
