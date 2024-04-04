@@ -9,7 +9,7 @@ U.isEmpty = function(v) {
   /**
    * String
    */
-  if (typeof v === 'string' && v === '') {
+  if (v.constructor === String && v === '') {
     return true
   }
 
