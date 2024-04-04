@@ -9,4 +9,4 @@ RUN npm i
 
 COPY . .
 
-CMD ["node", "index.js"]
+CMD ["node", "index.js", "--release"]
