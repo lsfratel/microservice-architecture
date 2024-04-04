@@ -49,5 +49,6 @@ ON('request_end', function(req, _) {
     method: ctx.method,
     host: req.headers.host,
     status: req.controller.status,
+    ip: req.controller.ip
   }))
 })
