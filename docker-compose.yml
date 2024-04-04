@@ -1,0 +1,40 @@
+version: "3.5"
+
+services:
+  service-registry:
+    build:
+      context: service-registry
+      dockerfile: Dockerfile
+
+  api-gateway:
+    build:
+      context: api-gateway
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_REGISTRY_URI=http://service-registry:8000
+      - FORWARD_HEADERS=authorization,host
+    ports:
+      - 8000:8000
+    depends_on:
+      - service-registry
+      - users-01
+
+  users-01: &user-service
+    build:
+      context: services/user
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=users
+      - SERVICE_URI=http://users-01:8000
+      - SERVICE_UUID=d8f36804-0c70-4640-9707-6b6ea55bef76
+      - SERVICE_REGISTRY_URI=http://service-registry:8000
+    depends_on:
+      - service-registry
+
+  users-02:
+    <<: *user-service
+    environment:
+      - SERVICE_NAME=users
+      - SERVICE_URI=http://users-02:8000
+      - SERVICE_UUID=1f72a04c-38b8-49f2-badd-8fa91b22a145
+      - SERVICE_REGISTRY_URI=http://service-registry:8000

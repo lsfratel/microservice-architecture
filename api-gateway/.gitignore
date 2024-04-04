@@ -1,0 +1,8 @@
+node_modules/
+tmp/
+index.js.json
+index.js.map
+index.pid
+*.nosql
+.env
+.env-debug

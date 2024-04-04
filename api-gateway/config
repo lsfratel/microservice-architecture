@@ -1,0 +1,9 @@
+// Arquivo de configuração, cada linha
+// desse arquivo vira um atributo na variavel global CONF
+name                        : API Gateway
+version                     : 0.0.1
+
+// Essas configurações são carregadas das variaveis
+// de ambiente.
+service_registry_uri  (env) : SERVICE_REGISTRY_URI
+forward_headers       (env) : FORWARD_HEADERS

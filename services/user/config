@@ -1,0 +1,11 @@
+// Arquivo de configuração, cada linha
+// desse arquivo vira um atributo na variavel global CONF
+name                        : Users Service
+version                     : 0.0.1
+
+// Essas configurações são carregadas das variaveis
+// de ambiente.
+service_name          (env) : SERVICE_NAME
+service_uri           (env) : SERVICE_URI
+service_registry_uri  (env) : SERVICE_REGISTRY_URI
+service_uuid          (env) : SERVICE_UUID

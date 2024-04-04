@@ -1,0 +1,4 @@
+// Arquivo de configuração, cada linha
+// desse arquivo vira um atributo na variavel global CONF
+name    : Service Registry
+version : 0.0.1

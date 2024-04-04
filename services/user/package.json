@@ -1,0 +1,13 @@
+{
+	"name": "user-service",
+	"description": "Service to manage users",
+	"version": "0.0.1",
+	"main": "index.js",
+	"dependencies": {
+		"total4": "latest"
+	},
+	"scripts": {
+		"dev": "node index.js 8003"
+	},
+	"license": "MIT"
+}
