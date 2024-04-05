@@ -34,7 +34,7 @@ ON('request_end', function(req, _) {
   const end = performance.now()
 
   /**
-   * Gera o logo de acesso.
+   * Gera o log de acesso.
    */
   console.info(JSON.stringify({
     time: new Date(),
